@@ -16,6 +16,11 @@ public class Server : MonoBehaviour {
 
     List<ClientInfo> clientInfoList = new List<ClientInfo>();
 
+    //当连接到服务器
+    public Action onConnectToServer;
+    //当收到消息
+    public Action<string> onReceiveMsg;
+
     //启动服务器
     public void StartServer() {
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -48,7 +53,9 @@ public class Server : MonoBehaviour {
             ClientInfo info = new ClientInfo() { socket = client };
             clientInfoList.Add(info);
 
-            Broadcast(string.Format(string.Format("{0}已加入", GetIP(client))));
+            //Broadcast(string.Format(string.Format("{0}已加入", GetIP(client))));
+
+            onConnectToServer?.Invoke();
 
             //继续监听
             server.BeginAccept(AcceptCallback, server);
@@ -94,15 +101,17 @@ public class Server : MonoBehaviour {
                     clientInfoList.Remove(info);
                     info.socket.Close();
 
-                    Broadcast(string.Format(string.Format("{0}已离线", ip)));
+                    //Broadcast(string.Format(string.Format("{0}已离线", ip)));
 
                     return;
                 }
 
                 string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
 
-                string msg = string.Format("<color=#{0}>{1}：</color>{2}", ColorUtility.ToHtmlStringRGBA(Color.red), ip, receiveStr);
-                Broadcast(msg);
+                //string msg = string.Format("<color=#{0}>{1}：</color>{2}", ColorUtility.ToHtmlStringRGBA(Color.red), ip, receiveStr);
+                //Broadcast(msg);
+
+                onReceiveMsg?.Invoke(receiveStr);
             }
         }
     }

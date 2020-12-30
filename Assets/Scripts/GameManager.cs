@@ -3,39 +3,144 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
+using UnityEngine.UI;
+using LitJson;
+using System;
 
 public class GameManager : MonoBehaviour {
+    public Button button_StartServer;
+    public Button button_Start;
+
+    public Text text;
+    public Text text_Center;
+
+    string serverIP;
+
+    Server server;
+    Client client;
+
+    private void Awake() {
+        button_StartServer.onClick.AddListener(StartServer);
+        button_Start.onClick.AddListener(StartExchange);
+
+        server = GetComponent<Server>();
+        client = GetComponent<Client>();
+    }
+
     private void Start() {
-        
+        text.text = "";
+
+        text_Center.text = "本机IP: " + GetLocalIPv4();
+
+        //开始接收服务器IP
+        BroadcastManager.instance.StartReceiving(msg => {
+            Print("接收到的服务器: " + msg);
+
+            serverIP = msg;
+
+            //停止接收服务器
+            BroadcastManager.instance.StopReceiving();
+        });
+
     }
 
-    private void Update() {
-        if (Input.GetKeyDown("1")) {
-            Server server = GetComponent<Server>();
-            server.StartServer();
-        }
-        if (Input.GetKeyDown("2")) {
-            Client client = GetComponent<Client>();
-            //client.Connect("127.0.0.1");
-            client.Connect("192.168.31.196");
-        }
+    #region 服务器
+
+    //启动服务器
+    void StartServer() {
+        //停止接收服务器IP
+        BroadcastManager.instance.StopReceiving();
+
+        //开始广播服务器IP
+        string ip = GetLocalIPv4();
+        BroadcastManager.instance.StartBroadcast(ip);
+
+        //启动服务器
+        server.StartServer();
+
+        server.onConnectToServer = () => {
+            Print("接收到客户端");
+        };
+        //当接受到消息
+        server.onReceiveMsg = msg => {
+            Print(msg);
+            ClientData data = JsonMapper.ToObject<ClientData>(msg);
+
+            Print(msg);
+            Print(data.time);
+            Print(data.loc);
+        };
     }
 
-    //进入换卡界面
+    #endregion
+
+    #region 客户端
+
+    enum Result { Undone, Success, Fail }
+
+    public class ClientData {
+        public Location loc;
+        public DateTime time;
+    }
 
     //开始换卡
     void StartExchange() {
-        //上传位置、当前时间到服务器
-        //时间
-        var time = System.DateTime.Now;
-        Debug.Log(time);
-
-        //位置
-
-        //开始接收信息
-
-
+        StartCoroutine(StartExchangeCor());
     }
+    IEnumerator StartExchangeCor() {
+        ClientData data = new ClientData();
+
+        //当前时间
+        var time = DateTime.Now;
+        Debug.Log((time.AddSeconds(5) - time).TotalSeconds);
+        data.time = time;
+
+        Print("--正在获取当前位置");
+        Result result_GetPos = Result.Undone;
+        //获取位置
+        LocationService.GetPos((success, loc) => {
+            if (success) {
+                result_GetPos = Result.Success;
+
+                //获取位置成功
+                Print("当前位置: " + loc.ToString());
+
+                data.loc = loc;
+
+            } else {
+                result_GetPos = Result.Fail;
+
+                //获取位置失败
+                Print("位置获取失败");
+            }
+        });
+
+        while(result_GetPos == Result.Undone) {
+            //Print("等待位置获取结果");
+            yield return null;
+        }
+        //位置获取失败，结束
+        if (result_GetPos == Result.Fail) {
+            yield break;
+        }
+
+        Print("--正在连接到服务器");
+        //连接服务器
+        client.Connect(serverIP, () => {
+            //连接完成
+            Print("已连接到服务器");
+
+            //发送自身位置和时间
+            string dataString = JsonMapper.ToJson(data);
+            Print(dataString);
+            client.Send(dataString);
+        });
+        client.onReceiveMsg = msg => {
+            Print("接收到消息: " + msg);
+        };
+    }
+
+    #endregion
 
     public static string GetLocalIPv4() {
         string hostName = Dns.GetHostName();
@@ -46,5 +151,13 @@ public class GameManager : MonoBehaviour {
                 return iPEntry.AddressList[i].ToString();
         }
         return null;
+    }
+
+    void Print(object obj) {
+        if(text.text != "") {
+            text.text += "\n";
+        }
+
+        text.text += obj;
     }
 }

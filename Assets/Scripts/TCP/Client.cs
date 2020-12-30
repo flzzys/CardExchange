@@ -11,18 +11,27 @@ public class Client : MonoBehaviour {
 
     byte[] readBuffer = new byte[1024];
 
+    //当连接到服务器
+    public Action onConnectToServer;
+    //当收到消息
+    public Action<string> onReceiveMsg;
+
     //连接
-    public void Connect(string ip) {
+    public void Connect(string ip, Action onComplete = null) {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         socket.BeginConnect(ip, port, ConnectCallback, socket);
 
         Print("连接");
+
+        onConnectToServer = onComplete;
     }
     void ConnectCallback(IAsyncResult ar) {
         try {
             Socket socket = (Socket)ar.AsyncState;
             socket.EndConnect(ar);
             Print("连接成功");
+
+            onConnectToServer?.Invoke();
         } catch (Exception e) {
             Debug.LogError(e);
         }
@@ -78,6 +87,8 @@ public class Client : MonoBehaviour {
                 return;
 
             string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
+
+            onReceiveMsg?.Invoke(receiveStr);
 
             Print("收到消息: " + receiveStr);
         }
