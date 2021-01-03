@@ -92,34 +92,36 @@ public class GameManager : MonoBehaviour {
         Debug.Log((time.AddSeconds(5) - time).TotalSeconds);
         data.time = time;
 
-        Print("--正在获取当前位置");
-        Result result_GetPos = Result.Undone;
-        //获取位置
-        LocationService.GetPos((success, loc) => {
-            if (success) {
-                result_GetPos = Result.Success;
+        yield return null;
 
-                //获取位置成功
-                Print("当前位置: " + loc.ToString());
+        //Print("--正在获取当前位置");
+        //Result result_GetPos = Result.Undone;
+        ////获取位置
+        //LocationService.GetPos((success, loc) => {
+        //    if (success) {
+        //        result_GetPos = Result.Success;
 
-                data.loc = loc;
+        //        //获取位置成功
+        //        Print("当前位置: " + loc.ToString());
 
-            } else {
-                result_GetPos = Result.Fail;
+        //        data.loc = loc;
 
-                //获取位置失败
-                Print("位置获取失败");
-            }
-        });
+        //    } else {
+        //        result_GetPos = Result.Fail;
 
-        while(result_GetPos == Result.Undone) {
-            //Print("等待位置获取结果");
-            yield return null;
-        }
-        //位置获取失败，结束
-        if (result_GetPos == Result.Fail) {
-            yield break;
-        }
+        //        //获取位置失败
+        //        Print("位置获取失败");
+        //    }
+        //});
+
+        //while(result_GetPos == Result.Undone) {
+        //    //Print("等待位置获取结果");
+        //    yield return null;
+        //}
+        ////位置获取失败，结束
+        //if (result_GetPos == Result.Fail) {
+        //    yield break;
+        //}
 
         Print("--正在连接到服务器");
         //连接服务器
