@@ -43,6 +43,11 @@ public class GameManager : MonoBehaviour {
         });
     }
 
+    string s = "";
+    private void Update() {
+        text.text = s;
+    }
+
     #region 服务器
 
     //启动服务器
@@ -153,10 +158,10 @@ public class GameManager : MonoBehaviour {
     }
 
     void Print(object obj) {
-        if(text.text != "") {
-            text.text += "\n";
+        if(s != "") {
+            s += "\n";
         }
 
-        text.text += obj;
+        s += obj;
     }
 }

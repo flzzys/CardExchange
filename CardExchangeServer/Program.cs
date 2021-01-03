@@ -2,12 +2,34 @@
 using System.Threading;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Permissions;
 using System.Net.Sockets;
+using Newtonsoft.Json;
 
 namespace CardExchangeServer {
     class ClientInfo {
         public Socket socket;
         public byte[] readBuffer = new byte[1024];
+    }
+
+    //位置，经纬度高度
+    public class Location {
+        //纬度
+        public float latitude;
+        //经度
+        public float longitude;
+        //高度
+        public float altitude;
+
+        public override string ToString() {
+            return string.Format("({0}, {1})", latitude, longitude);
+        }
+    }
+
+    //用户数据
+    public class ClientData {
+        public Location loc;
+        public DateTime time;
     }
 
     class Program {
@@ -18,19 +40,42 @@ namespace CardExchangeServer {
         //用户列表
         List<ClientInfo> clientInfoList = new List<ClientInfo>();
 
+        static Program instance;
+
         //开始
         static void Main(string[] args) {
-            string ip = GetLocalIPv4();
+            instance = new Program();
+            instance.Start();
+        }
 
+        void Start() {
             //开始广播
-            Program p = new Program();
-            p.StartBroadcast(ip);
+            string ip = GetLocalIPv4();
+            instance.StartBroadcast(ip);
 
             //启动服务器
-            p.StartServer();
+            instance.StartServer();
 
-            Console.Read();
+            //开始自动Update
+            Thread update = new Thread(new ThreadStart(instance.StartUpdating));
+            update.Start();
         }
+
+        void StartUpdating() {
+            while (true) {
+                Update();
+
+                Thread.Sleep(1000);
+            }
+        }
+
+        private void Update() {
+            //接收信息
+            UpdateReceiveMsg();
+        }
+
+
+        #region 服务器相关
 
         //启动服务器
         public void StartServer() {
@@ -40,7 +85,7 @@ namespace CardExchangeServer {
             server.Bind(iep);
             server.Listen(0);
 
-            Console.WriteLine("服务器启动!");
+            Console.WriteLine(string.Format("服务器启动! (IP: {0})", GetLocalIPv4()));
 
             //开始监听
             server.BeginAccept(AcceptCallback, server);
@@ -58,6 +103,8 @@ namespace CardExchangeServer {
 
                 Console.WriteLine(string.Format(string.Format("{0}已加入", GetIP(client))));
 
+                OnReceiveClient(client);
+
                 //继续监听
                 server.BeginAccept(AcceptCallback, server);
 
@@ -65,6 +112,58 @@ namespace CardExchangeServer {
                 Console.WriteLine(e);
             }
         }
+
+        //接收信息
+        void UpdateReceiveMsg() {
+            foreach (var info in clientInfoList) {
+                Socket client = info.socket;
+
+                if (client == null)
+                    return;
+
+                //有东西可接收
+                if (client.Poll(0, SelectMode.SelectRead)) {
+                    byte[] readBuffer = new byte[1024];
+                    int count = client.Receive(readBuffer);
+
+                    string ip = GetIP(client);
+
+                    //收到信息小于等于0，代表客户端关闭
+                    if (count <= 0) {
+                        clientInfoList.Remove(info);
+                        info.socket.Close();
+
+                        Console.WriteLine(string.Format(string.Format("{0}已离线", ip)));
+
+                        return;
+                    }
+
+                    string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
+
+                    OnReceiveMsg(info, receiveStr);
+                }
+            }
+        }
+
+        #endregion
+
+        #region API
+
+        //当接收客户端
+        void OnReceiveClient(Socket client) {
+
+        }
+
+        //当收到消息
+        void OnReceiveMsg(ClientInfo info, string msg) {
+            //转换为客户端数据
+            ClientData data = JsonConvert.DeserializeObject<ClientData>(msg);
+            Console.WriteLine(data.time);
+
+            //遍历客户端列表，找出位置接近的，互相发卡，重置剩余时间
+        }
+
+        #endregion
 
         #region 广播
 

@@ -11,3 +11,5 @@ D:\Github\2020.12.29\CardExchange\CardExchangeServer\obj\Debug\netcoreapp3.1\Car
 D:\Github\2020.12.29\CardExchange\CardExchangeServer\obj\Debug\netcoreapp3.1\CardExchangeServer.dll
 D:\Github\2020.12.29\CardExchange\CardExchangeServer\obj\Debug\netcoreapp3.1\CardExchangeServer.pdb
 D:\Github\2020.12.29\CardExchange\CardExchangeServer\obj\Debug\netcoreapp3.1\CardExchangeServer.genruntimeconfig.cache
+D:\Github\2020.12.29\CardExchange\CardExchangeServer\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+D:\Github\2020.12.29\CardExchange\CardExchangeServer\obj\Debug\netcoreapp3.1\CardExchangeServer.csproj.CopyComplete
