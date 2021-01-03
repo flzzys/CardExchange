@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "CardExchangeServer/1.0.0": {
+        "runtime": {
+          "CardExchangeServer.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "CardExchangeServer/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

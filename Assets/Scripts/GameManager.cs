@@ -34,29 +34,13 @@ public class GameManager : MonoBehaviour {
 
         //开始接收服务器IP
         BroadcastManager.instance.StartReceiving(msg => {
-            Print("接收到的服务器: " + msg);
+            Print("接收到服务器IP: " + msg);
 
             serverIP = msg;
 
             //停止接收服务器
             BroadcastManager.instance.StopReceiving();
         });
-
-        try {
-            ClientData data = new ClientData();
-            data.time = DateTime.Now;
-            data.loc = new Location();
-            data.loc.altitude = 1;
-            string dataString = JsonConvert.SerializeObject(data);
-            Print(dataString);
-
-            ClientData d = JsonConvert.DeserializeObject<ClientData>(dataString);
-            Print(d.time);
-            Print(d.loc.altitude);
-        }
-        catch(Exception e) {
-            Print(e);
-        }
     }
 
     #region 服务器
@@ -78,12 +62,10 @@ public class GameManager : MonoBehaviour {
         };
         //当接受到消息
         server.onReceiveMsg = msg => {
-            Print(msg);
+            //Print(msg);
             ClientData data = JsonConvert.DeserializeObject<ClientData>(msg);
 
-            Print(msg);
-            Print(data.time);
-            Print(data.loc);
+            Print(string.Format("收到客户端: (时间:{0}, 位置:{1})", data.time, data.loc));
         };
     }
 

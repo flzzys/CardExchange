@@ -13,7 +13,7 @@ public class Location {
     public float altitude;
 
     public override string ToString() {
-        return string.Format("({0}, {1}, {2})", latitude, longitude, altitude);
+        return string.Format("({0}, {1})", latitude, longitude);
     }
 }
 
