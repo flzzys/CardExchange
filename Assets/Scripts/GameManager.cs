@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine.UI;
-using LitJson;
+using Newtonsoft.Json;
 using System;
 
 public class GameManager : MonoBehaviour {
@@ -42,6 +42,21 @@ public class GameManager : MonoBehaviour {
             BroadcastManager.instance.StopReceiving();
         });
 
+        try {
+            ClientData data = new ClientData();
+            data.time = DateTime.Now;
+            data.loc = new Location();
+            data.loc.altitude = 1;
+            string dataString = JsonConvert.SerializeObject(data);
+            Print(dataString);
+
+            ClientData d = JsonConvert.DeserializeObject<ClientData>(dataString);
+            Print(d.time);
+            Print(d.loc.altitude);
+        }
+        catch(Exception e) {
+            Print(e);
+        }
     }
 
     #region 服务器
@@ -64,7 +79,7 @@ public class GameManager : MonoBehaviour {
         //当接受到消息
         server.onReceiveMsg = msg => {
             Print(msg);
-            ClientData data = JsonMapper.ToObject<ClientData>(msg);
+            ClientData data = JsonConvert.DeserializeObject<ClientData>(msg);
 
             Print(msg);
             Print(data.time);
@@ -131,7 +146,7 @@ public class GameManager : MonoBehaviour {
             Print("已连接到服务器");
 
             //发送自身位置和时间
-            string dataString = JsonMapper.ToJson(data);
+            string dataString = JsonConvert.SerializeObject(data);
             Print(dataString);
             client.Send(dataString);
         });
