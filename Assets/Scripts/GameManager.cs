@@ -136,7 +136,7 @@ public class GameManager : MonoBehaviour {
 
             //发送自身位置和时间
             string dataString = JsonConvert.SerializeObject(data);
-            Print(dataString);
+            //Print(dataString);
             client.Send(dataString);
         });
         client.onReceiveMsg = msg => {

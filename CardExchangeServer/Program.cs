@@ -2,14 +2,19 @@
 using System.Threading;
 using System.Collections.Generic;
 using System.Net;
-using System.Security.Permissions;
 using System.Net.Sockets;
 using Newtonsoft.Json;
 
 namespace CardExchangeServer {
+    //客户端信息
     class ClientInfo {
         public Socket socket;
         public byte[] readBuffer = new byte[1024];
+
+        //剩余时间
+        public int lifeTime = 5;
+
+        public ClientData data;
     }
 
     //位置，经纬度高度
@@ -38,7 +43,8 @@ namespace CardExchangeServer {
         int port = 1234;
 
         //用户列表
-        List<ClientInfo> clientInfoList = new List<ClientInfo>();
+        Dictionary<Socket, ClientInfo> clientInfoDic = new Dictionary<Socket, ClientInfo>();
+
 
         static Program instance;
 
@@ -70,6 +76,9 @@ namespace CardExchangeServer {
         }
 
         private void Update() {
+            //更新客户端剩余时间
+            UpdateClientLifeTime();
+
             //接收信息
             UpdateReceiveMsg();
         }
@@ -97,10 +106,6 @@ namespace CardExchangeServer {
                 Socket server = (Socket)ar.AsyncState;
                 Socket client = server.EndAccept(ar);
 
-                //新增客户信息
-                ClientInfo info = new ClientInfo() { socket = client };
-                clientInfoList.Add(info);
-
                 Console.WriteLine(string.Format(string.Format("{0}已加入", GetIP(client))));
 
                 OnReceiveClient(client);
@@ -115,8 +120,8 @@ namespace CardExchangeServer {
 
         //接收信息
         void UpdateReceiveMsg() {
-            foreach (var info in clientInfoList) {
-                Socket client = info.socket;
+            foreach (var info in clientInfoDic) {
+                Socket client = info.Value.socket;
 
                 if (client == null)
                     return;
@@ -130,8 +135,8 @@ namespace CardExchangeServer {
 
                     //收到信息小于等于0，代表客户端关闭
                     if (count <= 0) {
-                        clientInfoList.Remove(info);
-                        info.socket.Close();
+                        clientInfoDic.Remove(info.Key);
+                        info.Value.socket.Close();
 
                         Console.WriteLine(string.Format(string.Format("{0}已离线", ip)));
 
@@ -140,9 +145,37 @@ namespace CardExchangeServer {
 
                     string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
 
-                    OnReceiveMsg(info, receiveStr);
+                    OnReceiveMsg(info.Value, receiveStr);
                 }
             }
+        }
+
+        //更新客户端剩余时间
+        void UpdateClientLifeTime() {
+            List<Socket> itemToRemove = new List<Socket>();
+
+            foreach (var item in clientInfoDic) {
+                ClientInfo info = item.Value;
+                info.lifeTime--;
+
+                Console.WriteLine(info.lifeTime);
+
+                //移除
+                if (info.lifeTime <= 0) {
+                    itemToRemove.Add(item.Key);
+                }
+            }
+
+            foreach (var item in itemToRemove) {
+                RemoveClient(clientInfoDic[item]);
+            }
+        }
+
+        //移除客户端
+        void RemoveClient(ClientInfo info) {
+            Console.WriteLine(string.Format("客户端{0}超过时限已被移除", GetIP(info.socket)));
+
+            clientInfoDic.Remove(info.socket);
         }
 
         #endregion
@@ -151,7 +184,9 @@ namespace CardExchangeServer {
 
         //当接收客户端
         void OnReceiveClient(Socket client) {
-
+            //新增客户信息
+            ClientInfo info = new ClientInfo() { socket = client };
+            clientInfoDic.Add(client, info);
         }
 
         //当收到消息
@@ -161,6 +196,24 @@ namespace CardExchangeServer {
             Console.WriteLine(data.time);
 
             //遍历客户端列表，找出位置接近的，互相发卡，重置剩余时间
+            Console.WriteLine("---开始遍历客户端列表---");
+            foreach (var item in clientInfoDic) {
+                //跳过自己
+                if(item.Value == info) {
+                    continue;
+                }
+
+                float distance = GetDistance(data.loc, item.Value.data.loc);
+                Console.WriteLine(string.Format("{0} 距离{1}米"), GetIP(item.Key), distance);
+
+                //比较位置在50米内
+                if(distance < 50) {
+                    
+                }
+            }
+
+            //加入客户端列表
+            clientInfoDic[info.socket].data = data;
         }
 
         #endregion
@@ -221,6 +274,25 @@ namespace CardExchangeServer {
         //获取Socket的IP
         string GetIP(Socket socket) {
             return ((IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+        }
+
+        //根据两地经纬度计算距离，单位为米
+        public static float GetDistance(Location loc1, Location loc2) {
+            float lat1, lon1, lat2, lon2;
+            lat1 = loc1.latitude;
+            lon1 = loc1.longitude;
+            lat2 = loc2.latitude;
+            lon2 = loc2.longitude;
+
+            var R = 6378.137; // Radius of earth in KM
+            var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+            var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            var d = R * c;
+            return (float)d * 1000;
         }
     }
 }
