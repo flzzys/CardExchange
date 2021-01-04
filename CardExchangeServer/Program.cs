@@ -12,7 +12,7 @@ namespace CardExchangeServer {
         public byte[] readBuffer = new byte[1024];
 
         //剩余时间
-        public int lifeTime = 5;
+        public float lifeTime;
 
         public ClientData data;
     }
@@ -45,13 +45,16 @@ namespace CardExchangeServer {
         //用户列表
         Dictionary<Socket, ClientInfo> clientInfoDic = new Dictionary<Socket, ClientInfo>();
 
-
         static Program instance;
+
+        const float DefaultLifetime = 8;
 
         //开始
         static void Main(string[] args) {
             instance = new Program();
             instance.Start();
+
+            Console.Read();
         }
 
         void Start() {
@@ -185,7 +188,7 @@ namespace CardExchangeServer {
         //当接收客户端
         void OnReceiveClient(Socket client) {
             //新增客户信息
-            ClientInfo info = new ClientInfo() { socket = client };
+            ClientInfo info = new ClientInfo() { socket = client, lifeTime = DefaultLifetime };
             clientInfoDic.Add(client, info);
         }
 
@@ -195,7 +198,10 @@ namespace CardExchangeServer {
             ClientData data = JsonConvert.DeserializeObject<ClientData>(msg);
             Console.WriteLine(data.time);
 
-            //遍历客户端列表，找出位置接近的，互相发卡，重置剩余时间
+            //加入客户端列表
+            clientInfoDic[info.socket].data = data;
+
+            //遍历客户端列表，找出位置接近的
             Console.WriteLine("---开始遍历客户端列表---");
             foreach (var item in clientInfoDic) {
                 //跳过自己
@@ -203,17 +209,31 @@ namespace CardExchangeServer {
                     continue;
                 }
 
+                if (item.Value.data == null)
+                    continue;
+
                 float distance = GetDistance(data.loc, item.Value.data.loc);
-                Console.WriteLine(string.Format("{0} 距离{1}米"), GetIP(item.Key), distance);
 
                 //比较位置在50米内
                 if (distance < 50) {
+                    Console.WriteLine(string.Format("{0} 距离{1}米", GetIP(item.Key), distance));
 
+                    //重置剩余时间
+                    item.Value.lifeTime = DefaultLifetime;
+
+                    //互相发卡
+                    string s = string.Format("搜索到用户{0} (距离{1}米)", GetIP(item.Key), distance);
+                    Send(info.socket, s);
+                    s = string.Format("搜索到用户{0} (距离{1}米)", GetIP(info.socket), distance);
+                    Send(item.Key, s);
                 }
             }
+        }
 
-            //加入客户端列表
-            clientInfoDic[info.socket].data = data;
+        //发送消息
+        void Send(Socket socket, string msg) {
+            byte[] bytes = System.Text.Encoding.Default.GetBytes(msg);
+            socket.Send(bytes);
         }
 
         #endregion

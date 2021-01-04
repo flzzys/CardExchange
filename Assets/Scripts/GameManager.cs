@@ -32,9 +32,13 @@ public class GameManager : MonoBehaviour {
 
         text_Center.text = "本机IP: " + GetLocalIPv4();
 
+        button_Start.interactable = false;
+
         //开始接收服务器IP
         BroadcastManager.instance.StartReceiving(msg => {
             Print("接收到服务器IP: " + msg);
+
+            button_Start.interactable = true;
 
             serverIP = msg;
 
@@ -99,34 +103,34 @@ public class GameManager : MonoBehaviour {
 
         yield return null;
 
-        //Print("--正在获取当前位置");
-        //Result result_GetPos = Result.Undone;
-        ////获取位置
-        //LocationService.GetPos((success, loc) => {
-        //    if (success) {
-        //        result_GetPos = Result.Success;
+        Print("--正在获取当前位置");
+        Result result_GetPos = Result.Undone;
+        //获取位置
+        LocationService.GetPos((success, loc) => {
+            if (success) {
+                result_GetPos = Result.Success;
 
-        //        //获取位置成功
-        //        Print("当前位置: " + loc.ToString());
+                //获取位置成功
+                Print("当前位置: " + loc.ToString());
 
-        //        data.loc = loc;
+                data.loc = loc;
 
-        //    } else {
-        //        result_GetPos = Result.Fail;
+            } else {
+                result_GetPos = Result.Fail;
 
-        //        //获取位置失败
-        //        Print("位置获取失败");
-        //    }
-        //});
+                //获取位置失败
+                Print("位置获取失败");
+            }
+        });
 
-        //while(result_GetPos == Result.Undone) {
-        //    //Print("等待位置获取结果");
-        //    yield return null;
-        //}
-        ////位置获取失败，结束
-        //if (result_GetPos == Result.Fail) {
-        //    yield break;
-        //}
+        while (result_GetPos == Result.Undone) {
+            //Print("等待位置获取结果");
+            yield return null;
+        }
+        //位置获取失败，结束
+        if (result_GetPos == Result.Fail) {
+            yield break;
+        }
 
         Print("--正在连接到服务器");
         //连接服务器
