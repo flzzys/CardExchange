@@ -52,19 +52,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Zyf\\.nuget\\packages\\": {}
+    "C:\\Users\\ZYF\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Github\\2020.12.29\\CardExchange\\CardExchangeServer\\CardExchangeServer.csproj",
+      "projectUniqueName": "E:\\Project\\Github\\2020.12.30\\CardExchange\\CardExchangeServer\\CardExchangeServer.csproj",
       "projectName": "CardExchangeServer",
-      "projectPath": "D:\\Github\\2020.12.29\\CardExchange\\CardExchangeServer\\CardExchangeServer.csproj",
-      "packagesPath": "C:\\Users\\Zyf\\.nuget\\packages\\",
-      "outputPath": "D:\\Github\\2020.12.29\\CardExchange\\CardExchangeServer\\obj\\",
+      "projectPath": "E:\\Project\\Github\\2020.12.30\\CardExchange\\CardExchangeServer\\CardExchangeServer.csproj",
+      "packagesPath": "C:\\Users\\ZYF\\.nuget\\packages\\",
+      "outputPath": "E:\\Project\\Github\\2020.12.30\\CardExchange\\CardExchangeServer\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Zyf\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ZYF\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

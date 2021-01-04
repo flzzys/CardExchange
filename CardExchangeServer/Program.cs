@@ -199,7 +199,7 @@ namespace CardExchangeServer {
             Console.WriteLine("---开始遍历客户端列表---");
             foreach (var item in clientInfoDic) {
                 //跳过自己
-                if(item.Value == info) {
+                if (item.Value == info) {
                     continue;
                 }
 
@@ -207,8 +207,8 @@ namespace CardExchangeServer {
                 Console.WriteLine(string.Format("{0} 距离{1}米"), GetIP(item.Key), distance);
 
                 //比较位置在50米内
-                if(distance < 50) {
-                    
+                if (distance < 50) {
+
                 }
             }
 
