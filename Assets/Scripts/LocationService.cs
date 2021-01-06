@@ -33,7 +33,7 @@ public class LocationService : Singleton<LocationService> {
         StartCoroutine(StartServiceCor(onComplete));
     }
     IEnumerator StartServiceCor(Action<bool> onComplete = null) {
-        Input.location.Start();
+        Input.location.Start(5);
 
         //不支持位置服务
         if (!enableLocationService) {
