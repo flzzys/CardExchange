@@ -16,6 +16,9 @@ public class Client : MonoBehaviour {
     //当收到消息
     public Action<string> onReceiveMsg;
 
+    //当服务器离线或被踢出
+    public Action onServerOffline;
+
     //连接
     public void Connect(string ip, Action onComplete = null) {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -45,6 +48,8 @@ public class Client : MonoBehaviour {
 
             if (count <= 0) {
                 Print("服务器离线");
+
+                onServerOffline?.Invoke();
 
                 return;
             }
