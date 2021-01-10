@@ -24,7 +24,6 @@ public class ServerData {
 }
 
 public class GameManager : MonoBehaviour {
-    public Button button_StartServer;
     public Button button_Start;
 
     public Text text;
@@ -38,24 +37,26 @@ public class GameManager : MonoBehaviour {
     Client client;
 
     private void Awake() {
-        button_StartServer.onClick.AddListener(StartServer);
-        button_Start.onClick.AddListener(StartExchange);
-
         server = GetComponent<Server>();
         client = GetComponent<Client>();
-
     }
 
     private void Start() {
         text.text = "";
 
-        text_Center.text = "本机IP: " + GetLocalIPv4();
+        //text_Center.text = "本机IP: " + GetLocalIPv4();
 
         //获取随机颜色
         playerColor = colors[UnityEngine.Random.Range(0, colors.Length)];
         image_CatThing.color = playerColor;
 
-        //button_Start.interactable = false;
+        //如果未启动位置服务
+        if (!LocationService.enableLocationService) {
+            button_Start.GetComponentInChildren<Text>().text = "启动位置服务";
+            button_Start.onClick.AddListener(CheckLocationService);
+        } else {
+            button_Start.onClick.AddListener(StartExchange);
+        }
 
         //开始接收服务器IP
         //BroadcastManager.instance.StartReceiving(msg => {
@@ -213,7 +214,7 @@ public class GameManager : MonoBehaviour {
 
     #region 颜色
 
-    Color[] colors = { Color.red, Color.blue, Color.green, Color.cyan, Color.yellow };
+    Color[] colors = { Color.red, Color.blue, Color.green, Color.cyan, Color.yellow, Color.gray, Color.magenta };
     Color playerColor;
 
     //颜色和字符串转换
@@ -228,4 +229,29 @@ public class GameManager : MonoBehaviour {
 
     #endregion
 
+    void CheckLocationService() {
+        Print("正在尝试获取位置服务..");
+        LocationService.instance.StartService(isSuccess => {
+            print(isSuccess);
+            if (isSuccess) {
+                Print("位置服务已启动!");
+                button_Start.GetComponent<Animator>().SetTrigger("Flip");
+
+                StartCoroutine(Delay());
+
+                button_Start.onClick.RemoveAllListeners();
+                button_Start.onClick.AddListener(StartExchange);
+            } else {
+                Print("不支持位置服务:(");
+            }
+        });
+    }
+
+    IEnumerator Delay() {
+        button_Start.interactable = false;
+        yield return new WaitForSeconds(.33f);
+        button_Start.interactable = true;
+
+        button_Start.GetComponentInChildren<Text>().text = "开始换卡";
+    }
 }
