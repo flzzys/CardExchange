@@ -70,6 +70,9 @@
     <Compile Include="Assets\Scripts\TCP\BroadcastManager.cs" />
     <Compile Include="Assets\Scripts\TCP\Client.cs" />
     <Compile Include="Assets\Scripts\TCP\Server.cs" />
+    <Compile Include="Assets\StompyRobot\SROptions\SROptions.Attributes.cs" />
+    <Compile Include="Assets\StompyRobot\SROptions\SROptions.Test.cs" />
+    <Compile Include="Assets\StompyRobot\SROptions\SROptions.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
@@ -686,7 +689,24 @@
       <HintPath>E:/Project/Github/2020.12.30/CardExchange/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="StompyRobot.SRDebugger.csproj">
+      <Project>{FDFC1951-C679-7367-0774-1A8422099C12}</Project>
+      <Name>StompyRobot.SRDebugger</Name>
+    </ProjectReference>
+    <ProjectReference Include="StompyRobot.SRDebugger.Editor.csproj">
+      <Project>{742C217C-1B50-92F1-8E8D-57F02CCCF332}</Project>
+      <Name>StompyRobot.SRDebugger.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="StompyRobot.SRF.Editor.csproj">
+      <Project>{D10679F8-8AFF-DF1E-5B2F-98BD3F88EAC6}</Project>
+      <Name>StompyRobot.SRF.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="StompyRobot.SRF.csproj">
+      <Project>{7AFCB547-AC0A-6E33-60DC-9B97F7E88068}</Project>
+      <Name>StompyRobot.SRF</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

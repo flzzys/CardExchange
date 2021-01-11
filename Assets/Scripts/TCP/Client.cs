@@ -39,31 +39,6 @@ public class Client : MonoBehaviour {
             Debug.LogError(e);
         }
     }
-    
-    //接收消息
-    void ReceiveCallback(IAsyncResult ar) {
-        try {
-            Socket socket = (Socket)ar.AsyncState;
-            int count = socket.EndReceive(ar);
-
-            if (count <= 0) {
-                Print("服务器离线");
-
-                onServerOffline?.Invoke();
-
-                return;
-            }
-
-            string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
-
-            Print("收到消息：" + receiveStr);
-
-            socket.BeginReceive(readBuffer, 0, 1024, 0, ReceiveCallback, socket);
-
-        } catch (Exception e) {
-            Debug.LogError(e);
-        }
-    }
 
     //发送消息
     public void Send(string msg) {
@@ -85,18 +60,36 @@ public class Client : MonoBehaviour {
 
         //有东西可接收
         if(socket.Poll(0, SelectMode.SelectRead)) {
-            byte[] readBuffer = new byte[1024];
-            int count = socket.Receive(readBuffer);
+            try {
+                byte[] readBuffer = new byte[1024];
+                int count = socket.Receive(readBuffer);
 
-            if (count <= 0)
-                return;
+                if (count <= 0) {
+                    Print("服务器离线");
 
-            string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
+                    Close();
 
-            onReceiveMsg?.Invoke(receiveStr);
+                    onServerOffline?.Invoke();
 
-            Print("收到消息: " + receiveStr);
+                    return;
+                }
+
+                string receiveStr = System.Text.Encoding.Default.GetString(readBuffer, 0, count);
+
+                onReceiveMsg?.Invoke(receiveStr);
+
+                Print("收到消息: " + receiveStr);
+            } catch(Exception e) {
+                Print("连接异常: " + e);
+
+                Close();
+            }
         }
+    }
+
+    void Close() {
+        socket.Close();
+        socket = null;
     }
 
     private void OnApplicationQuit() {

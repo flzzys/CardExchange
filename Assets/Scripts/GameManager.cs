@@ -25,6 +25,7 @@ public class ServerData {
 
 public class GameManager : MonoBehaviour {
     public Button button_Start;
+    public Button button_Clear;
 
     public Text text;
     public Text text_Center;
@@ -32,6 +33,7 @@ public class GameManager : MonoBehaviour {
     public Image image_CatThing;
 
     const string serverIP = "49.235.226.171";
+    //const string serverIP = "192.168.31.196";
 
     Server server;
     Client client;
@@ -43,12 +45,15 @@ public class GameManager : MonoBehaviour {
 
     private void Start() {
         text.text = "";
-
-        //text_Center.text = "本机IP: " + GetLocalIPv4();
+        text_Center.text = "本机IP:" + GetLocalIPv4();
 
         //获取随机颜色
         playerColor = colors[UnityEngine.Random.Range(0, colors.Length)];
         image_CatThing.color = playerColor;
+
+        button_Clear.onClick.AddListener(() => {
+            s = "";
+        });
 
         //如果未启动位置服务
         if (!LocationService.enableLocationService) {
@@ -76,34 +81,6 @@ public class GameManager : MonoBehaviour {
     private void Update() {
         text.text = s;
     }
-
-    #region 服务器
-
-    //启动服务器
-    void StartServer() {
-        //停止接收服务器IP
-        BroadcastManager.instance.StopReceiving();
-
-        //开始广播服务器IP
-        string ip = GetLocalIPv4();
-        BroadcastManager.instance.StartBroadcast(ip);
-
-        //启动服务器
-        server.StartServer();
-
-        server.onConnectToServer = () => {
-            Print("接收到客户端");
-        };
-        //当接受到消息
-        server.onReceiveMsg = msg => {
-            //Print(msg);
-            ClientData data = JsonConvert.DeserializeObject<ClientData>(msg);
-
-            Print(string.Format("收到客户端: (时间:{0}, 位置:{1})", data.time, data.loc));
-        };
-    }
-
-    #endregion
 
     #region 客户端
 
@@ -185,8 +162,11 @@ public class GameManager : MonoBehaviour {
     void OnReceiveMsg(string msg) {
         //Print("接收到消息: " + msg);
 
-        ServerData serverData = JsonConvert.DeserializeObject<ServerData>(msg);
-        Print(string.Format("<color={0}>{1}(距离{2}米)</color>: {3}", serverData.color, serverData.client, serverData.distance.ToString("f0"), serverData.msg));
+        foreach (var item in msg.Split('|')) {
+            ServerData serverData = JsonConvert.DeserializeObject<ServerData>(item);
+            Print(string.Format("<color={0}>{1}(距离{2}米)</color>: {3}", serverData.color, serverData.client, serverData.distance.ToString("f0"), serverData.msg));
+        }
+        
 
     }
 
@@ -214,7 +194,7 @@ public class GameManager : MonoBehaviour {
 
     #region 颜色
 
-    Color[] colors = { Color.red, Color.blue, Color.green, Color.cyan, Color.yellow, Color.gray, Color.magenta };
+    Color[] colors = { Color.red, Color.blue, Color.green, Color.cyan, Color.yellow, Color.magenta };
     Color playerColor;
 
     //颜色和字符串转换
@@ -232,7 +212,6 @@ public class GameManager : MonoBehaviour {
     void CheckLocationService() {
         Print("正在尝试获取位置服务..");
         LocationService.instance.StartService(isSuccess => {
-            print(isSuccess);
             if (isSuccess) {
                 Print("位置服务已启动!");
                 button_Start.GetComponent<Animator>().SetTrigger("Flip");
