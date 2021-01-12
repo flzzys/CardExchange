@@ -24,9 +24,9 @@ public class Client : MonoBehaviour {
 
         Print("连接中..");
 
-        //if (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5))) {
-        //    Print("timeout");
-        //}
+        if (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5))) {
+            Print("timeout");
+        }
 
         bool success = socket.Connected;
         if (success) {

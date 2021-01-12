@@ -112,7 +112,7 @@ public class GameManager : MonoBehaviour {
         var time = DateTime.Now;
         data.time = time;
 
-        yield return null;
+        //yield return null;
 
         Print("--正在获取当前位置");
         Result result_GetPos = Result.Undone;
@@ -177,8 +177,12 @@ public class GameManager : MonoBehaviour {
         //Print("接收到消息: " + msg);
 
         foreach (var item in msg.Split('|')) {
+            if (item == "")
+                continue;
+
+            //Print("拆分后的消息: " + item);
             ServerData serverData = JsonConvert.DeserializeObject<ServerData>(item);
-            Print(string.Format("<color={0}>{1}(距离{2}米)</color>: {3}", serverData.color, serverData.client, serverData.distance.ToString("f0"), serverData.msg));
+            Print(string.Format("<color={0}>{1}({2}米)</color>: {3}", serverData.color, serverData.client, serverData.distance.ToString("f0"), serverData.msg));
         }
         
 
