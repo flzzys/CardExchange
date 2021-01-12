@@ -32,14 +32,14 @@ public class GameManager : MonoBehaviour {
     public InputField inputField;
     public Image image_CatThing;
 
-    const string serverIP = "49.235.226.171";
-    //const string serverIP = "192.168.31.196";
+    string serverIP = "49.235.226.171";
 
-    Server server;
     Client client;
 
     private void Awake() {
-        server = GetComponent<Server>();
+        //
+        //serverIP = "192.168.31.196";
+
         client = GetComponent<Client>();
     }
 
@@ -88,7 +88,12 @@ public class GameManager : MonoBehaviour {
 
     //开始换卡
     void StartExchange() {
+        button_Start.GetComponent<Animator>().SetTrigger("Hide");
+
         StartCoroutine(StartExchangeCor());
+    }
+    void OnExchangeEnd() {
+        button_Start.GetComponent<Animator>().SetTrigger("Show");
     }
     IEnumerator StartExchangeCor() {
         ClientData data = new ClientData();
@@ -105,7 +110,6 @@ public class GameManager : MonoBehaviour {
 
         //当前时间
         var time = DateTime.Now;
-        Debug.Log((time.AddSeconds(5) - time).TotalSeconds);
         data.time = time;
 
         yield return null;
@@ -136,23 +140,33 @@ public class GameManager : MonoBehaviour {
         }
         //位置获取失败，结束
         if (result_GetPos == Result.Fail) {
+            OnExchangeEnd();
+
             yield break;
         }
 
         Print("--正在连接到服务器");
         //连接服务器
-        client.Connect(serverIP, () => {
-            //连接完成
-            Print("已连接到服务器");
-            Print("----------------");
+        client.Connect(serverIP, success => {
+            if (success) {
+                //连接完成
+                Print("已连接到服务器");
+                Print("----------------");
+                Print("换卡开始");
 
-            //发送自身位置和时间
-            string dataString = JsonConvert.SerializeObject(data);
-            //Print(dataString);
-            client.Send(dataString);
+                //发送自身位置和时间
+                string dataString = JsonConvert.SerializeObject(data);
+                
+                client.Send(dataString);
+            } else {
+                OnExchangeEnd();
+                Print("未能连接到服务器");
+            }
+            
         });
         client.onReceiveMsg = OnReceiveMsg;
         client.onServerOffline = () => {
+            OnExchangeEnd();
             Print("换卡结束");
             Print("----------------");
         };

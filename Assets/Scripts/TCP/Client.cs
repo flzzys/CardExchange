@@ -11,8 +11,6 @@ public class Client : MonoBehaviour {
 
     byte[] readBuffer = new byte[1024];
 
-    //当连接到服务器
-    public Action onConnectToServer;
     //当收到消息
     public Action<string> onReceiveMsg;
 
@@ -20,24 +18,30 @@ public class Client : MonoBehaviour {
     public Action onServerOffline;
 
     //连接
-    public void Connect(string ip, Action onComplete = null) {
+    public void Connect(string ip, Action<bool> onComplete = null) {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        socket.BeginConnect(ip, port, ConnectCallback, socket);
+        var result = socket.BeginConnect(ip, port, null, null);
 
-        Print("连接");
+        Print("连接中..");
 
-        onConnectToServer = onComplete;
-    }
-    void ConnectCallback(IAsyncResult ar) {
-        try {
-            Socket socket = (Socket)ar.AsyncState;
-            socket.EndConnect(ar);
+        //if (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5))) {
+        //    Print("timeout");
+        //}
+
+        bool success = socket.Connected;
+        if (success) {
+            socket.EndConnect(result);
+
             Print("连接成功");
 
-            onConnectToServer?.Invoke();
-        } catch (Exception e) {
-            Debug.LogError(e);
+        } else {
+            Close();
+
+            Print("连接异常");
         }
+
+        onComplete?.Invoke(success);
+
     }
 
     //发送消息
@@ -50,7 +54,7 @@ public class Client : MonoBehaviour {
             Socket socket = (Socket)ar.AsyncState;
             socket.EndSend(ar);
         } catch (Exception e) {
-            Debug.LogError(e);
+            Debug.LogError("发送异常:" + e);
         }
     }
 
@@ -80,7 +84,7 @@ public class Client : MonoBehaviour {
 
                 Print("收到消息: " + receiveStr);
             } catch(Exception e) {
-                Print("连接异常: " + e);
+                Debug.LogError("接收异常: " + e);
 
                 Close();
             }
