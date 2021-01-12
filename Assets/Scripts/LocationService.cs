@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 
 //位置，经纬度高度
+[System.Serializable]
 public class Location {
     //纬度
     public float latitude;

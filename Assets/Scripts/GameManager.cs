@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine.UI;
-using Newtonsoft.Json;
 using System;
 
 //用户数据
@@ -155,8 +154,9 @@ public class GameManager : MonoBehaviour {
                 Print("换卡开始");
 
                 //发送自身位置和时间
-                string dataString = JsonConvert.SerializeObject(data);
-                
+                string dataString = JsonUtility.ToJson(data);
+                //string dataString = JsonConvert.SerializeObject(data);
+
                 client.Send(dataString);
             } else {
                 OnExchangeEnd();
@@ -181,7 +181,8 @@ public class GameManager : MonoBehaviour {
                 continue;
 
             //Print("拆分后的消息: " + item);
-            ServerData serverData = JsonConvert.DeserializeObject<ServerData>(item);
+            ServerData serverData = JsonUtility.FromJson<ServerData>(item);
+            //ServerData serverData = JsonConvert.DeserializeObject<ServerData>(item);
             Print(string.Format("<color={0}>{1}({2}米)</color>: {3}", serverData.color, serverData.client, serverData.distance.ToString("f0"), serverData.msg));
         }
         

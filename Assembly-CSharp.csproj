@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\TCP\BroadcastManager.cs" />
     <Compile Include="Assets\Scripts\TCP\Client.cs" />
     <Compile Include="Assets\Scripts\TCP\Server.cs" />
+    <Compile Include="Assets\Scripts\XcodeProcess.cs" />
     <Compile Include="Assets\StompyRobot\SROptions\SROptions.Attributes.cs" />
     <Compile Include="Assets\StompyRobot\SROptions\SROptions.Test.cs" />
     <Compile Include="Assets\StompyRobot\SROptions\SROptions.cs" />
