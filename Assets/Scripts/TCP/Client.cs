@@ -33,7 +33,6 @@ public class Client : MonoBehaviour {
             socket.EndConnect(result);
 
             Print("连接成功");
-
         } else {
             Close();
 

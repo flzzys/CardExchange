@@ -50,8 +50,11 @@ public class GameManager : MonoBehaviour {
         playerColor = colors[UnityEngine.Random.Range(0, colors.Length)];
         image_CatThing.color = playerColor;
 
+        //清空按钮
         button_Clear.onClick.AddListener(() => {
             s = "";
+            text.GetComponent<ContentSizeFitter>().enabled = false;
+            text.GetComponent<ContentSizeFitter>().enabled = true;
         });
 
         //如果未启动位置服务
