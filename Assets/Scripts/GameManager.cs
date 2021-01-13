@@ -111,8 +111,6 @@ public class GameManager : MonoBehaviour {
         var time = DateTime.Now;
         data.time = time;
 
-        //yield return null;
-
         Print("--正在获取当前位置");
         Result result_GetPos = Result.Undone;
         //获取位置
@@ -122,6 +120,7 @@ public class GameManager : MonoBehaviour {
 
                 //获取位置成功
                 Print("当前位置: " + loc.ToString());
+                Print("定位精度: " + Input.location.lastData.horizontalAccuracy);
 
                 data.loc = loc;
 
@@ -155,7 +154,6 @@ public class GameManager : MonoBehaviour {
 
                 //发送自身位置和时间
                 string dataString = JsonUtility.ToJson(data);
-                //string dataString = JsonConvert.SerializeObject(data);
 
                 client.Send(dataString);
             } else {
@@ -182,11 +180,8 @@ public class GameManager : MonoBehaviour {
 
             //Print("拆分后的消息: " + item);
             ServerData serverData = JsonUtility.FromJson<ServerData>(item);
-            //ServerData serverData = JsonConvert.DeserializeObject<ServerData>(item);
             Print(string.Format("<color={0}>{1}({2}米)</color>: {3}", serverData.color, serverData.client, serverData.distance.ToString("f0"), serverData.msg));
         }
-        
-
     }
 
     #endregion
